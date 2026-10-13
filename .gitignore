@@ -1,2 +1,6 @@
 __pycache__/
 ducks.json
+.venv/
+*.egg-info/
+build/
+dist/

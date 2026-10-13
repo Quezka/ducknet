@@ -36,6 +36,7 @@ Una connessione = una richiesta. Codici: 200 QUACK, 400 QUACK-ATTO, 404 NESSUNA-
 - [Il protocollo DUCK/1](docs/protocollo.md)
 - [Architettura, sicurezza e limiti](docs/architettura.md)
 - [Installazione sul server](docs/installazione.md)
+- [Stagno, il browser](docs/browser.md)
 
 ## Provarlo in locale
 
@@ -47,7 +48,7 @@ DUCKNET_SECRET=... python3 -m ducknet host pippo.duck example-site --relay 127.0
 python3 -m ducknet get duck://pippo.duck/ --dns 127.0.0.1 --dns-port 5353
 ```
 
-Test: `python3 -m unittest discover -s tests`
+Test: `python3 -m unittest discover -s tests` (i test del browser servono PySide6; senza, installa con `.[browser]`)
 
 ## Mettere online (server di casa)
 
@@ -58,10 +59,15 @@ Test: `python3 -m unittest discover -s tests`
 4. Registra i nomi sul server: `python3 -m ducknet register nome.duck --registry /var/lib/ducknet/ducks.json`.
 5. Chi ospita un sito, da dove vuole: `DUCKNET_SECRET=... ducknet host nome.duck ./cartella --relay dns.quezka.uk`.
 
-## Il browser (da fare)
+## Stagno, il browser
 
-Il client (`ducknet/client.py`: `fetch("duck://...")`) è già pronto. Il browser sarà una finestra
-con barra degli indirizzi che lo usa e mostra l'HTML, con i meme. Per ora c'è `ducknet get`.
+Un browser nativo Qt con barra degli indirizzi, schede, tema chiaro/scuro, italiano/russo/inglese e
+tanti meme. Si installa **solo per l'utente**, senza root: `./install.sh` (vedi [docs/browser.md](docs/browser.md)).
+
+```sh
+./install.sh
+stagno duck://pippo.duck/
+```
 
 ## Limiti attuali, da sapere
 

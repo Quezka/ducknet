@@ -41,11 +41,11 @@ collega al visitatore. Il relay non guarda il contenuto: copia byte e basta.
 4. Il DNS risponde solo su IPv4 (A). Per AAAA risponde "esiste ma senza indirizzo".
 5. Il relay incolla tutta la risposta: un host lento tiene occupata la connessione (nessun timeout
    dopo l'inizio dello scambio).
-6. Il browser non esiste ancora; il client è solo una libreria e `ducknet get`.
+6. Il browser (Stagno, vedi `browser.md`) è alla prima versione: mancano segnalibri, cronologia, download.
 
 ## Idee per dopo
 
-- Il **browser** (con meme): barra degli indirizzi, cronologia, pagine d'errore a tema, schermata iniziale.
+- Stagno: segnalibri, cronologia, ricerca nella pagina, download, e un installer per Windows.
 - Quack **HEAD/POST** e cookie, se serve ai siti.
 - Pagina di stato del relay (quali nomi sono online), magari nel Quezka Dash.
 - `ducknet register` via rete con un token di amministrazione, invece di lavorare sul file.

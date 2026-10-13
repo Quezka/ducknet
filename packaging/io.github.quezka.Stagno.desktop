@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Stagno
+GenericName=DuckNet Browser
+Comment=Browse DuckNet (duck://), the playful alternative to HTTP
+Exec=stagno %u
+Icon=io.github.quezka.Stagno
+Terminal=false
+Categories=Network;WebBrowser;
+Keywords=duck;ducknet;browser;quack;meme;
+MimeType=x-scheme-handler/duck;
+StartupWMClass=stagno
