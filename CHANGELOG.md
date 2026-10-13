@@ -4,6 +4,12 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.3.1] - 2026-10-13
+
+- Fix: the host could silently stop answering (its tasks were garbage-collected on some Python versions), so pages showed as offline.
+- Fix: Stagno cleans up its web pages before its profile when it closes (no crash or warning at exit).
+- Add the GPL-3.0 licence file.
+
 ## [0.3.0] - 2026-10-13
 
 - Stagno is now installable: a `.deb` for Debian and Ubuntu, and a Windows setup wizard (per user, no admin needed). Both register Stagno as the program for `duck://` links.

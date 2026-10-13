@@ -8,7 +8,7 @@ import unittest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QTWEBENGINE_CHROMIUM_FLAGS", "--no-sandbox --disable-gpu")
 
-from PySide6.QtCore import QEventLoop, QTimer, QUrl  # noqa: E402
+from PySide6.QtCore import QEvent, QEventLoop, QTimer, QUrl  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from ducknet import dns  # noqa: E402
@@ -67,7 +67,7 @@ class BrowserTest(unittest.TestCase):
             d = await dns.serve(reg, "127.0.0.1", "127.0.0.1", 0)
             ports["dns"] = d.get_extra_info("sockname")[1]
             host = Host("pippo.duck", secret, site, "127.0.0.1", ports["relay"])
-            asyncio.ensure_future(host.run())
+            cls.host_task = asyncio.ensure_future(host.run())      # tenuto vivo: i task orfani possono sparire
             await host.ready.wait()
             cls.loop, cls.stop = asyncio.get_running_loop(), asyncio.Event()
             ready.set()
@@ -81,8 +81,11 @@ class BrowserTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.window.close()
+        cls.window.close()                # closeEvent cancella pagine e profilo nell'ordine giusto
         cls.window.deleteLater()
+        for _ in range(5):
+            QApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+            QApplication.processEvents()
         cls.loop.call_soon_threadsafe(cls.stop.set)
         cls.thread.join(5)
         cls.dir.cleanup()

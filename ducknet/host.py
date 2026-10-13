@@ -41,6 +41,7 @@ class Host:
         self.root = os.path.realpath(root)
         self.relay = (relay_host, relay_port)
         self.ready = asyncio.Event()
+        self._tasks = set()      # l'event loop tiene solo riferimenti deboli ai task: senza questo possono sparire a metà
 
     async def run(self):
         """Resta posato per sempre; se il relay cade, si riconnette con una pausa crescente."""
@@ -67,7 +68,9 @@ class Host:
             async for raw in reader:
                 parts = raw.decode("utf-8", "replace").split()
                 if len(parts) == 2 and parts[0] == "INCOMING":
-                    asyncio.ensure_future(self._answer(parts[1]))
+                    task = asyncio.ensure_future(self._answer(parts[1]))
+                    self._tasks.add(task)
+                    task.add_done_callback(self._tasks.discard)
         finally:
             writer.close()
 

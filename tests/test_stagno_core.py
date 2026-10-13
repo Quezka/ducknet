@@ -106,7 +106,7 @@ class FetcherTest(unittest.TestCase):
             d = await dns.serve(reg, "127.0.0.1", "127.0.0.1", 0)
             cls.ports["dns"] = d.get_extra_info("sockname")[1]
             host = Host("pippo.duck", secret, site, "127.0.0.1", cls.ports["relay"])
-            asyncio.ensure_future(host.run())
+            cls.host_task = asyncio.ensure_future(host.run())      # tenuto vivo: i task orfani possono sparire
             await host.ready.wait()
             cls.stop = asyncio.Event()
             cls.loop = asyncio.get_running_loop()

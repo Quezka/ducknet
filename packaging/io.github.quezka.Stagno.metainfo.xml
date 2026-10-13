@@ -51,6 +51,11 @@
 
   <!-- Newest first. Every released version needs an entry; tests enforce it. -->
   <releases>
+    <release version="0.3.1" date="2026-10-13">
+      <description>
+        <p>Fixes: a host that could silently stop answering, and a cleaner exit.</p>
+      </description>
+    </release>
     <release version="0.3.0" date="2026-10-13">
       <description>
         <p>Installable packages: a .deb for Debian and Ubuntu and a Windows setup wizard.</p>

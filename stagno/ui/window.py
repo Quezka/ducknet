@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Stagno")
         self.setWindowIcon(QIcon(os.path.join(ASSETS, "stagno.svg")))
         self.resize(1100, 760)
-        self.profile = QWebEngineProfile("stagno", self)
+        self.profile = QWebEngineProfile("stagno")      # senza genitore: lo cancelliamo noi, dopo le pagine
         self.bridge = Bridge(self.profile, settings.config)
 
         self.tabs = QTabWidget()
@@ -67,6 +67,15 @@ class MainWindow(QMainWindow):
         self._restyle()
         for url in start_urls or ["duck://stagno/"]:
             self.new_tab(url)
+
+    def closeEvent(self, event):
+        # Qt vuole le pagine cancellate PRIMA del profilo, altrimenti avvisa e può crashare in uscita.
+        while self.tabs.count():
+            view = self.tabs.widget(0)
+            self.tabs.removeTab(0)
+            view.deleteLater()
+        self.profile.deleteLater()
+        super().closeEvent(event)
 
     # -- costruzione ---------------------------------------------------------------------------------
     def _build_toolbar(self):
