@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata: what Ubuntu App Center / GNOME Software show about Stagno. -->
+<component type="desktop-application">
+  <id>io.github.quezka.Stagno</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Stagno</name>
+  <summary>The browser for DuckNet, the playful alternative to HTTP</summary>
+  <developer id="io.github.quezka">
+    <name>Quezka</name>
+  </developer>
+
+  <description>
+    <p>
+      Stagno opens duck:// addresses. It asks the DuckNet DNS where a name lives and talks
+      DUCK/1, DuckNet's own protocol, through the DuckNet relay: there is no HTTP underneath.
+    </p>
+    <ul>
+      <li>Tabs, a light and a dark theme, in English, Italian and Russian</li>
+      <li>Only DuckNet: regular http and https pages are never opened, and neither are
+          resources a duck page tries to load from the web</li>
+      <li>Lots of memes</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.quezka.Stagno.desktop</launchable>
+  <provides>
+    <binary>stagno</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/Quezka/ducknet</url>
+  <url type="bugtracker">https://github.com/Quezka/ducknet/issues</url>
+
+  <categories>
+    <category>Network</category>
+    <category>WebBrowser</category>
+  </categories>
+  <keywords>
+    <keyword>duck</keyword>
+    <keyword>ducknet</keyword>
+    <keyword>browser</keyword>
+    <keyword>meme</keyword>
+  </keywords>
+
+  <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#dbe4ff</color>
+    <color type="primary" scheme_preference="dark">#1e3a8a</color>
+  </branding>
+
+  <!-- Newest first. Every released version needs an entry; tests enforce it. -->
+  <releases>
+    <release version="0.3.0" date="2026-10-13">
+      <description>
+        <p>Installable packages: a .deb for Debian and Ubuntu and a Windows setup wizard.</p>
+      </description>
+    </release>
+    <release version="0.2.0" date="2026-10-13">
+      <description>
+        <p>First version of the Stagno browser.</p>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-10-13">
+      <description>
+        <p>First version of DuckNet: the DUCK/1 protocol, DNS server, relay and host.</p>
+      </description>
+    </release>
+  </releases>
+</component>

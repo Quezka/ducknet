@@ -20,7 +20,8 @@ def main(argv=None):
     app = QApplication([sys.argv[0]] + qt_args)
     app.setApplicationName("Stagno")
     app.setOrganizationName("quezka")
-    app.setDesktopFileName("io.github.quezka.Stagno")
+    from . import APP_ID
+    app.setDesktopFileName(APP_ID)
 
     from .ui import theme
     from .ui.settings import Settings

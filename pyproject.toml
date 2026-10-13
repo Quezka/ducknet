@@ -12,6 +12,7 @@ dependencies = []
 
 [project.optional-dependencies]
 browser = ["PySide6>=6.6"]
+build = ["PySide6>=6.6", "pyinstaller>=6.0"]
 
 [project.scripts]
 ducknet = "ducknet.cli:main"
