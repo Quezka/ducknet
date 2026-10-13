@@ -1,0 +1,16 @@
+[Unit]
+Description=DuckNet relay
+After=network.target
+
+[Service]
+User=ducknet
+WorkingDirectory=/opt/ducknet
+ExecStart=/usr/bin/python3 -m ducknet relay --registry /var/lib/ducknet/ducks.json
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
