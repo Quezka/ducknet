@@ -31,6 +31,12 @@ content-length: 0                      content-type: text/html; charset=utf-8
 Una connessione = una richiesta. Codici: 200 QUACK, 400 QUACK-ATTO, 404 NESSUNA-PAPERA,
 502 STAGNO-ASCIUTTO (l'host non risponde), 503 PAPERA-ASSENTE (esiste ma è offline).
 
+## Documentazione
+
+- [Il protocollo DUCK/1](docs/protocollo.md)
+- [Architettura, sicurezza e limiti](docs/architettura.md)
+- [Installazione sul server](docs/installazione.md)
+
 ## Provarlo in locale
 
 ```sh
