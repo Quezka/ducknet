@@ -1,6 +1,6 @@
 """Impostazioni di Stagno (per utente, in QSettings) e la loro finestra."""
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFormLayout, QLabel, QLineEdit,
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QLabel, QLineEdit,
                                QSpinBox, QVBoxLayout)
 
 from ..core.fetcher import Config
@@ -25,13 +25,22 @@ class Settings:
         self._q.setValue("dns_port", config.dns_port)
         self._q.setValue("relay_port", config.relay_port)
 
+    # un archivio chiave/valore per gli aggiornamenti (KeyValueStore)
+    def get(self, key):
+        value = self._q.value("kv/" + key)
+        return None if value is None else str(value)
+
+    def set(self, key, value):
+        self._q.setValue("kv/" + key, value)
+
     theme = property(lambda s: s._q.value("theme", "system", str), lambda s, v: s._q.setValue("theme", v))
     language = property(lambda s: s._q.value("language", "auto", str), lambda s, v: s._q.setValue("language", v))
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, settings, parent=None):
+    def __init__(self, settings, parent=None, updates=None):
         super().__init__(parent)
+        self.updates = updates
         self.setWindowTitle(_("Settings"))
         self.setMinimumWidth(420)
         config = settings.config()
@@ -54,6 +63,10 @@ class SettingsDialog(QDialog):
         form = QFormLayout()
         form.addRow(_("Appearance"), self.theme)
         form.addRow(_("Language"), self.language)
+        if updates is not None:
+            self.auto_updates = QCheckBox(_("Check for updates automatically"))
+            self.auto_updates.setChecked(updates.auto_check() is True)
+            form.addRow("", self.auto_updates)
         form.addRow(_("DuckNet DNS server"), self.dns)
         form.addRow(_("DNS port"), self.dns_port)
         form.addRow(_("Relay port"), self.relay_port)
@@ -74,3 +87,5 @@ class SettingsDialog(QDialog):
                                    self.dns_port.value(), self.relay_port.value()))
         settings.theme = self.theme.currentData()
         settings.language = self.language.currentData()
+        if self.updates is not None:
+            self.updates.set_auto_check(self.auto_updates.isChecked())

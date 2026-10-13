@@ -14,6 +14,7 @@ from ..core.i18n import N_, _, language
 from . import icons, theme
 from .scheme import Bridge
 from .settings import SettingsDialog
+from .updates_ui import UpdateChecker
 
 ASSETS = os.path.join(os.path.dirname(__file__), "..", "assets")
 
@@ -38,9 +39,10 @@ class DuckView(QWebEngineView):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, settings, start_urls=()):
+    def __init__(self, settings, start_urls=(), updates=None):
         super().__init__()
         self.settings = settings
+        self.updates = updates
         self.setWindowTitle("Stagno")
         self.setWindowIcon(QIcon(os.path.join(ASSETS, "stagno.svg")))
         self.resize(1100, 760)
@@ -65,6 +67,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         self._build_toolbar()
         self._restyle()
+        self.updater = UpdateChecker(updates, self) if updates is not None else None
         for url in start_urls or ["duck://stagno/"]:
             self.new_tab(url)
 
@@ -102,6 +105,7 @@ class MainWindow(QMainWindow):
                                     (N_("Zoom out"), "Ctrl+-", lambda: self._zoom(-0.1)),
                                     (N_("Reset zoom"), "Ctrl+0", lambda: self._zoom(None)),
                                     (N_("Settings…"), "Ctrl+,", self.open_settings),
+                                    (N_("Check for updates…"), "", lambda: self.updater and self.updater.check_now()),
                                     (N_("About Stagno"), "", self.about),
                                     (N_("Quit"), "Ctrl+Q", self.close)):
             act = menu.addAction(_(label))
@@ -230,7 +234,7 @@ class MainWindow(QMainWindow):
         view.setZoomFactor(1.0 if delta is None else min(3.0, max(0.3, view.zoomFactor() + delta)))
 
     def open_settings(self):
-        dialog = SettingsDialog(self.settings, self)
+        dialog = SettingsDialog(self.settings, self, self.updates)
         if dialog.exec():
             dialog.apply_to(self.settings)
             theme.apply(QApplication.instance(), self.settings.theme)

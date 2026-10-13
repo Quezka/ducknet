@@ -37,7 +37,12 @@ def main(argv=None):
                            dns_port=args.dns_port or base.dns_port,
                            relay_port=args.relay_port or base.relay_port)
         settings.config = lambda: override        # solo per questa sessione, non viene salvato
-    window = MainWindow(settings, args.urls)
+    from . import HOMEPAGE, __version__
+    from .core.update_sources import GitHubReleaseFeed, platform_installer
+    from .core.updates import UpdateService
+    repo = HOMEPAGE.rsplit("github.com/", 1)[1]
+    updates = UpdateService(GitHubReleaseFeed(repo, __version__), platform_installer(), settings, __version__)
+    window = MainWindow(settings, args.urls, updates)
     window.show()
     return app.exec()
 

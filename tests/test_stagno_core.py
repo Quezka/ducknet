@@ -1,3 +1,4 @@
+import ast
 import asyncio
 import os
 import re
@@ -66,13 +67,19 @@ class I18nTest(unittest.TestCase):
             self.assertEqual(fields(key), fields(RU[key]), key)
 
     def test_every_used_string_is_translated(self):
+        # le chiamate _("...") e N_("...") nel codice, lette con l'AST (così le stringhe spezzate su più righe tornano intere)
         root = os.path.join(os.path.dirname(__file__), "..", "stagno")
         used = set()
-        for base, _, files in os.walk(root):
+        for base, _dirs, files in os.walk(root):
             for name in files:
                 if name.endswith(".py") and name != "catalogs.py":
                     with open(os.path.join(base, name), encoding="utf-8") as f:
-                        used |= set(re.findall(r'\b(?:_|N_)\(\s*"((?:[^"\\]|\\.)*)"', f.read()))
+                        tree = ast.parse(f.read())
+                    for node in ast.walk(tree):
+                        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                                and node.func.id in ("_", "N_") and node.args
+                                and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str)):
+                            used.add(node.args[0].value)
         self.assertTrue(used)
         self.assertEqual(sorted(used - set(IT)), [])
         self.assertEqual(sorted(set(IT) - used), [], "traduzioni non usate")

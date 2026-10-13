@@ -50,6 +50,12 @@ class ReleaseTest(unittest.TestCase):
         for lang in ("English", "Italian", "Russian"):
             self.assertIn("Languages\\%s.isl" % lang if lang != "English" else "Default.isl", iss)
 
+    def test_installer_restarts_stagno_after_a_silent_self_update(self):
+        iss = read("packaging", "stagno.iss")
+        self.assertIn("skipifnotsilent", iss)
+        # i nomi dei file che l'aggiornamento automatico cerca devono coincidere con quelli prodotti dalla build
+        self.assertIn("OutputBaseFilename=Stagno-{#AppVersion}-windows-x64-setup", iss)
+
     def test_build_scripts_keep_webengine(self):
         build = read("scripts", "build.py")
         self.assertNotIn("QtWebEngineCore", build)        # il browser ne ha bisogno
