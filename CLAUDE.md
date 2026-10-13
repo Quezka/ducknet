@@ -12,3 +12,5 @@ Shared memory note: `ducknet-project` in the user's claude-memory repo (read it 
 - Packaging (like Quire/Ligature): `python scripts/build.py --deb` (Linux) and `--installer` (Windows, Inno Setup, `packaging/stagno.iss`, per-user). The .exe can only be built on Windows, i.e. by `.github/workflows/build.yml` on a `v*` tag. Never change the Inno `AppId`. `DEPENDS` in `scripts/deb.py` came from `ldd` over the frozen app.
 - Release: bump `ducknet.__version__`, add CHANGELOG + metainfo `<release>` (tests/test_release.py checks), tag `vX.Y.Z`.
 - `install.sh`/`uninstall.sh` are the from-source per-user install (venv in ~/.local/share/stagno).
+- asyncio gotcha (bit us on CI, Python 3.12): the loop keeps only WEAK references to tasks. Always keep a strong reference to fire-and-forget tasks (`host.py` keeps `self._tasks`). Local Python is 3.14, CI is 3.12: a bug that "works here" can still fail in CI.
+- Qt gotcha: delete web pages before their `QWebEngineProfile` (`MainWindow.closeEvent`), else a warning and a segfault at exit.
