@@ -28,7 +28,7 @@ content-length: 0                      content-type: text/html; charset=utf-8
                                        <h1>quack</h1>
 ```
 
-Una connessione = una richiesta. Codici: 104 PAPERA-IN-PERMESSO (nella cartella del sito c'è un file `.permesso`), 200 QUACK, 400 QUACK-ATTO, 404 NESSUNA-PAPERA,
+Una connessione = una richiesta. Codici: 104 PAPERA-IN-PERMESSO (nella cartella del sito c'è un file `.permesso`), 200 QUACK, 400 QUACK-ATTO, 404 NESSUNA-PAPERA, 418 SONO-UNA-TEIERA (chiedi `/caffe`),
 502 STAGNO-ASCIUTTO (l'host non risponde), 503 PAPERA-ASSENTE (esiste ma è offline).
 
 ## Documentazione

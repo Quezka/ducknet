@@ -35,6 +35,7 @@ content-length: N\r\n
 | 400    | QUACK-ATTO      | richiesta malformata                                         |
 | 403    | NIENTE-STAGNO   | riservato (accesso negato)                                   |
 | 404    | NESSUNA-PAPERA  | nome non registrato (dal relay) o pagina inesistente (dall'host) |
+| 418    | SONO-UNA-TEIERA | chiedi `/caffe`, `/coffee`, `/teiera` o `/teapot` a un sito che non ha quella pagina |
 | 500    | PAPERA-ROTTA    | errore interno dell'host                                     |
 | 502    | STAGNO-ASCIUTTO | l'host non ha risposto entro 10 s                            |
 | 503    | PAPERA-ASSENTE  | il nome esiste ma l'host non è online                        |

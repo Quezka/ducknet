@@ -1,0 +1,10 @@
+[Unit]
+Description=Controlla l'IP pubblico di DuckNet ogni 10 minuti
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

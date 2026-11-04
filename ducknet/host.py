@@ -9,6 +9,7 @@ from . import protocol
 
 BACKOFF = (1, 2, 5, 10, 30)
 CHANNEL_LIMIT = 1 << 20
+COFFEE = {"caffe", "caffè", "coffee", "teiera", "teapot"}  # easter egg, se il sito non ha una pagina con quel nome
 ON_LEAVE = ".permesso"  # questo file nella cartella del sito fa rispondere 104 a tutto
 
 
@@ -28,6 +29,8 @@ def respond(root, raw_path):
     if os.path.isfile(os.path.join(root, ON_LEAVE)):  # la papera oggi non lavora
         return protocol.error_page(104, "Oggi sono in permesso. Ripassa domani, quack.")
     target = _resolve(root, raw_path)
+    if target is None and unquote(urlsplit(raw_path).path).strip("/").lower() in COFFEE:
+        return protocol.error_page(418, "Qui si fa solo il tè. Il caffè chiedilo al bar, quack.")
     if target is None:
         return protocol.error_page(404, "Questa pagina è volata via.")
     with open(target, "rb") as f:

@@ -51,6 +51,11 @@
 
   <!-- Newest first. Every released version needs an entry; tests enforce it. -->
   <releases>
+    <release version="0.6.0" date="2026-11-04">
+      <description>
+        <p>New status code 418 SONO-UNA-TEIERA: ask any site for coffee.</p>
+      </description>
+    </release>
     <release version="0.5.0" date="2026-11-04">
       <description>
         <p>New status code 104 PAPERA-IN-PERMESSO, for a site that has taken the day off.</p>

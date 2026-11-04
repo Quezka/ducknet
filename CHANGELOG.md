@@ -4,6 +4,11 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.6.0] - 2026-11-04
+
+- New status code **418 SONO-UNA-TEIERA**: ask any site for `/caffe`, `/coffee`, `/teiera` or `/teapot` (unless it has a page with that name). There is a meme too.
+- Server: `ducknet-ddns` follows the home's public address when it changes, and with a Cloudflare token keeps the `dns.quezka.uk` record up to date.
+
 ## [0.5.0] - 2026-11-04
 
 - New status code **104 PAPERA-IN-PERMESSO**: put a file named `.permesso` in a site's folder and the duck answers 104 to every request until you remove it. Stagno shows the page, and there is a new meme.

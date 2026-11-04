@@ -1,0 +1,9 @@
+[Unit]
+Description=DuckNet: IP pubblico e record dns.quezka.uk aggiornati
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/ducknet
+ExecStart=/usr/bin/python3 -m ducknet.ddns

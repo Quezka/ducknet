@@ -56,7 +56,13 @@ journalctl -u ducknet-dns -u ducknet-relay -f                       # sul server
 Se `get` dà "non esiste su DuckNet": il nome non è registrato (o il DNS non è raggiungibile).
 Se dà 503: il nome esiste ma nessun host è posato. Se non risponde nulla: controlla l'inoltro delle porte.
 
-## Promemoria del server
+## IP che cambia
 
-Il server DuckNet non esiste ancora: vedi `homelab-server-pending` nella memoria. Il container
-va messo con `onboot` come gli altri.
+L'IP pubblico di casa cambia, quindi `ducknet-ddns.timer` lo controlla ogni 10 minuti e aggiorna `DUCKNET_RELAY_IP`.
+Con un token Cloudflare (permesso Zone → DNS → Edit su quezka.uk) in `/etc/ducknet/cloudflare.token`, permessi 600,
+crea e aggiorna anche il record A `dns.quezka.uk`, senza proxy.
+
+```sh
+cp deploy/ducknet-ddns.service deploy/ducknet-ddns.timer /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now ducknet-ddns.timer
+```

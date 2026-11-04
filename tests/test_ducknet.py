@@ -92,6 +92,61 @@ class HostFilesTest(unittest.TestCase):
             os.remove(os.path.join(root, ".permesso"))
             self.assertIn(b"200", respond(root, "/")[:20])
 
+    def test_asking_for_coffee_gets_a_teapot_unless_the_site_has_that_page(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = os.path.realpath(d)
+            write(os.path.join(root, "index.html"), "ok")
+            for path in ("/caffe", "/coffee/", "/TEAPOT", "/teiera", "/caff%C3%A8"):
+                self.assertTrue(respond(root, path).startswith(b"DUCK/1 418 SONO-UNA-TEIERA"), path)
+            self.assertIn(b"404", respond(root, "/altro")[:20])
+            write(os.path.join(root, "caffe"), "menu")
+            self.assertIn(b"200", respond(root, "/caffe")[:20])
+
+    def test_ddns_follows_the_address_and_keeps_the_record_right(self):
+        import io
+        import json
+        from ducknet import ddns
+
+        class Answer(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                self.close()
+
+        self.assertEqual(ddns.public_ip(lambda *a, **k: Answer(b"87.20.177.208\n")), "87.20.177.208")
+        for bad in (b"<html>oops", b"192.168.1.1", b"::1"):
+            with self.assertRaises(ValueError):
+                ddns.public_ip(lambda *a, b=bad, **k: Answer(b))
+        with tempfile.TemporaryDirectory() as d:
+            env = os.path.join(d, "env")
+            write(env, "DUCKNET_RELAY_IP=1.2.3.4\nOTHER=x\n")
+            self.assertTrue(ddns.update_env(env, "87.20.177.208"))
+            self.assertFalse(ddns.update_env(env, "87.20.177.208"))
+            self.assertEqual(open(env).read(), "DUCKNET_RELAY_IP=87.20.177.208\nOTHER=x\n")
+        records, calls = [], []
+
+        def cloudflare(request, timeout=None):
+            calls.append((request.get_method(), request.full_url))
+            self.assertEqual(request.get_header("Authorization"), "Bearer tok")
+            if "/zones?name=" in request.full_url:
+                result = [{"id": "z1"}]
+            elif request.get_method() == "GET":
+                result = list(records)
+            else:
+                body = json.loads(request.data)
+                self.assertFalse(body["proxied"])
+                records[:] = [dict(body, id="r1")]
+                result = records[0]
+            return Answer(json.dumps({"success": True, "result": result}).encode())
+
+        self.assertTrue(ddns.update_record("tok", "1.1.1.1", cloudflare))
+        self.assertEqual(calls[-1][0], "POST")
+        self.assertFalse(ddns.update_record("tok", "1.1.1.1", cloudflare))
+        self.assertTrue(ddns.update_record("tok", "8.8.8.8", cloudflare))
+        self.assertEqual(calls[-1][0], "PUT")
+        self.assertEqual(records[0]["content"], "8.8.8.8")
+
     def test_no_path_traversal(self):
         with tempfile.TemporaryDirectory() as d:
             site, secret = os.path.join(d, "site"), os.path.join(d, "segreto.txt")
