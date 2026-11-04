@@ -15,6 +15,8 @@ MEMES = [
          {"en": "THE DUCK: NO", "it": "LA PAPERA: NO"}),
     Meme("🦆", {"en": "404", "it": "404"},
          {"en": "DUCK NOT FOUND", "it": "PAPERA NON TROVATA"}),
+    Meme("🦆", {"en": "104", "it": "104"},
+         {"en": "THE DUCK IS ON LEAVE", "it": "LA PAPERA È IN PERMESSO"}),
     Meme("🐥", {"en": "WHEN THE RELAY IS UP", "it": "QUANDO IL RELAY FUNZIONA"},
          {"en": "QUACK QUACK QUACK", "it": "QUACK QUACK QUACK"}),
     Meme("🦆", {"en": "ONE SERVER", "it": "UN SOLO SERVER"},

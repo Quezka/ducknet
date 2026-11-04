@@ -30,6 +30,7 @@ content-length: N\r\n
 
 | Codice | Motto           | Quando                                                       |
 |--------|-----------------|--------------------------------------------------------------|
+| 104    | PAPERA-IN-PERMESSO | il sito è in permesso: nella sua cartella c'è un file `.permesso` |
 | 200    | QUACK           | tutto bene                                                   |
 | 400    | QUACK-ATTO      | richiesta malformata                                         |
 | 403    | NIENTE-STAGNO   | riservato (accesso negato)                                   |

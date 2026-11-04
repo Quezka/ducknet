@@ -4,6 +4,10 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.5.0] - 2026-11-04
+
+- New status code **104 PAPERA-IN-PERMESSO**: put a file named `.permesso` in a site's folder and the duck answers 104 to every request until you remove it. Stagno shows the page, and there is a new meme.
+
 ## [0.4.0] - 2026-10-13
 
 - Stagno can update itself: "Check for updates…" in the menu, and an automatic check about once a day. It asks your permission the first time (and there is a switch in Settings). Updates come from the GitHub releases, are checked against their SHA-256, and install through `pkexec apt` on Linux or silently with the setup on Windows; other copies are pointed to the download page.

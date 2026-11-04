@@ -81,6 +81,17 @@ class DnsTest(unittest.TestCase):
 
 
 class HostFilesTest(unittest.TestCase):
+    def test_a_duck_on_leave_answers_104_to_everything(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = os.path.realpath(d)
+            write(os.path.join(root, "index.html"), "ok")
+            self.assertIn(b"200", respond(root, "/")[:20])
+            write(os.path.join(root, ".permesso"), "")
+            for path in ("/", "/nope.html", "/.permesso"):
+                self.assertTrue(respond(root, path).startswith(b"DUCK/1 104 PAPERA-IN-PERMESSO"), path)
+            os.remove(os.path.join(root, ".permesso"))
+            self.assertIn(b"200", respond(root, "/")[:20])
+
     def test_no_path_traversal(self):
         with tempfile.TemporaryDirectory() as d:
             site, secret = os.path.join(d, "site"), os.path.join(d, "segreto.txt")
