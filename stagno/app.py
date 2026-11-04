@@ -28,6 +28,7 @@ def main(argv=None):
     from .ui.window import MainWindow
     settings = Settings()
     i18n.set_language(i18n.detect_language() if settings.language == "auto" else settings.language)
+    theme.load_font(app)
     theme.apply(app, settings.theme)
 
     if args.dns or args.dns_port or args.relay_port:

@@ -4,6 +4,11 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.7.0] - 2026-11-04
+
+### Changed
+- A new look: Material 3 shapes and tonal colours, and the Manrope typeface. A flick on a trackpad now keeps gliding; a mouse wheel works as before.
+
 ## [0.6.0] - 2026-11-04
 
 - New status code **418 SONO-UNA-TEIERA**: ask any site for `/caffe`, `/coffee`, `/teiera` or `/teapot` (unless it has a page with that name). There is a meme too.
