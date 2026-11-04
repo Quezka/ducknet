@@ -4,6 +4,11 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.8.0] - 2026-11-04
+
+### Changed
+- The icons are Material Symbols now: outlined, and filled for what is selected.
+
 ## [0.7.0] - 2026-11-04
 
 ### Changed
