@@ -4,6 +4,10 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.8.1] - 2026-11-14
+
+- **New Stagno icon**, drawn like every other Quezka app: the same rounded square in its own plain colour with a white symbol.
+
 ## [0.8.0] - 2026-11-04
 
 ### Changed
