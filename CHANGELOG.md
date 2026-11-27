@@ -4,6 +4,13 @@ All notable changes to DuckNet and its browser Stagno. Versions follow [Semantic
 patch for fixes, minor for new features, major for breaking changes (while below 1.0,
 breaking changes bump the minor version).
 
+## [0.9.0] - 2026-11-27
+
+### Changed
+- **DNS over HTTPS.** Stagno and `ducknet get` now ask `https://dns.quezka.uk/dns-query` (RFC 8484), which runs behind a Cloudflare tunnel: the DNS opens no port at home, its answers are encrypted, and the home address no longer sits in a public record. A plain host name in the settings still uses DNS over UDP. Saved settings that pointed at the old `dns.quezka.uk` move to the new address by themselves.
+- `ducknet host` finds the relay by itself (it asks the DNS for its own name); `--relay` still overrides it.
+- Server: `ducknet dns --doh-port` serves DNS over HTTPS; `ducknet-ddns` only follows the home address, no Cloudflare token needed any more.
+
 ## [0.8.1] - 2026-11-14
 
 - **New Stagno icon**, drawn like every other Quezka app: the same rounded square in its own plain colour with a white symbol.

@@ -51,6 +51,9 @@
 
   <!-- Newest first. Every released version needs an entry; tests enforce it. -->
   <releases>
+    <release version="0.9.0" date="2026-11-27">
+      <description><p>DuckNet names are now looked up over HTTPS (DNS over HTTPS), encrypted and through a Cloudflare tunnel.</p></description>
+    </release>
     <release version="0.8.1" date="2026-11-14">
       <description>
         <p>A new Stagno icon, matching the rest of the Quezka apps.</p>

@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 
 from . import dns, protocol
 
-DEFAULT_DNS = "dns.quezka.uk"
+DEFAULT_DNS = "https://dns.quezka.uk/dns-query"  # DNS-over-HTTPS; un host semplice = DNS su UDP
 
 
 def parse_url(url):

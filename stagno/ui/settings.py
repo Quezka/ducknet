@@ -16,7 +16,10 @@ class Settings:
 
     def config(self):
         d = Config()
-        return Config(self._q.value("dns_server", d.dns_server, str),
+        server = self._q.value("dns_server", d.dns_server, str)
+        if server == "dns.quezka.uk":  # fino alla 0.8: DNS su UDP, ora DNS-over-HTTPS
+            server = d.dns_server
+        return Config(server,
                       self._q.value("dns_port", d.dns_port, int),
                       self._q.value("relay_port", d.relay_port, int))
 

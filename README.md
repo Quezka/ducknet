@@ -6,12 +6,13 @@ Un'alternativa (giocosa) a HTTP: protocollo **DUCK/1**, indirizzi `duck://nome.d
 ## Come funziona
 
 ```
- browser ──DNS──▶ dns.quezka.uk        «dov'è pippo.duck?»  →  IP del relay
+ browser ──DNS (HTTPS)──▶ dns.quezka.uk   «dov'è pippo.duck?»  →  IP del relay
  browser ──QUACK pippo.duck /──▶ relay ◀──tunnel── host (dietro NAT, nessuna porta aperta)
 ```
 
 - **DNS** (`ducknet dns`): risolve solo i `.duck` registrati (gli altri nomi: REFUSED, quindi niente
-  open resolver). Tutti puntano al relay.
+  open resolver). Tutti puntano al relay. Da Internet si interroga via DNS-over-HTTPS
+  (`https://dns.quezka.uk/dns-query`, dietro il tunnel Cloudflare); in LAN anche su UDP.
 - **Relay** (`ducknet relay`, porta 4343): l'unica porta aperta del server. Fa da tubo tra visitatore e host.
 - **Host** (`ducknet host`): chi pubblica un sito si *posa* sul relay con una connessione in uscita
   (tunnel inverso, come ngrok/frp): per ogni visita il relay avvisa, l'host apre una connessione
@@ -52,12 +53,12 @@ Test: `python3 -m unittest discover -s tests` (i test del browser servono PySide
 
 ## Mettere online (server di casa)
 
-1. Il nome `dns.quezka.uk` deve avere un record A verso l'IP pubblico del server.
-2. Sul router: inoltra **UDP 53** (DNS) e **TCP 4343** (relay) al server.
+1. `dns.quezka.uk` passa da un tunnel Cloudflare verso `http://<server>:8053` (DNS-over-HTTPS).
+2. Sul router: inoltra solo **TCP 4343** (relay) al server.
 3. Copia il progetto in `/opt/ducknet`, crea l'utente `ducknet`, `/var/lib/ducknet/`,
    `/etc/ducknet/ducknet.env` (vedi `deploy/`), installa le due unit systemd.
 4. Registra i nomi sul server: `python3 -m ducknet register nome.duck --registry /var/lib/ducknet/ducks.json`.
-5. Chi ospita un sito, da dove vuole: `DUCKNET_SECRET=... ducknet host nome.duck ./cartella --relay dns.quezka.uk`.
+5. Chi ospita un sito, da dove vuole: `DUCKNET_SECRET=... ducknet host nome.duck ./cartella` (trova il relay chiedendo il proprio nome al DNS).
 
 ## Stagno, il browser
 

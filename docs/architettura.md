@@ -6,7 +6,7 @@
 |----------------------|-----------------------------------------------------------------------------|
 | `ducknet/protocol.py`| lettura/scrittura dei messaggi DUCK/1, limiti, pagina d'errore              |
 | `ducknet/registry.py`| nomi `.duck` registrati e hash dei segreti (file JSON)                      |
-| `ducknet/dns.py`     | server DNS UDP per i `.duck` + piccolo client `resolve()`                   |
+| `ducknet/dns.py`     | server DNS (UDP + DNS-over-HTTPS) per i `.duck` + client `resolve()`         |
 | `ducknet/relay.py`   | il relay: visitatori, host (tunnel inversi), incollaggio delle connessioni  |
 | `ducknet/host.py`    | l'host: serve una cartella, si riconnette al relay se cade                  |
 | `ducknet/client.py`  | `fetch("duck://...")`: DNS → relay → risposta. Lo userà il browser          |

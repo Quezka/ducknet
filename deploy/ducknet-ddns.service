@@ -1,5 +1,5 @@
 [Unit]
-Description=DuckNet: IP pubblico e record dns.quezka.uk aggiornati
+Description=DuckNet: segue l'IP pubblico di casa
 After=network-online.target
 Wants=network-online.target
 

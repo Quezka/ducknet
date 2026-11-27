@@ -28,7 +28,7 @@ stagno duck://pippo.duck/    # apre un indirizzo
 - Barra degli indirizzi: scrivi `pippo.duck`, `pippo` (vale `pippo.duck`) o `duck://pippo.duck/pagina`.
 - Schede, indietro/avanti, ricarica/ferma, zoom, `Ctrl+T` `Ctrl+W` `Ctrl+L` `F5` `Alt+←/→` `Ctrl +/−/0`.
 - Menu ☰ → Impostazioni: tema (sistema/chiaro/scuro), lingua (it, ru, en), server DNS (di default
-  `dns.quezka.uk`).
+  `https://dns.quezka.uk/dns-query`, DNS-over-HTTPS; un host semplice usa il DNS su UDP).
 - **Solo DuckNet**: Stagno non apre `http://` né `https://`, né pagine né risorse (immagini, script)
   caricate da una pagina duck. Mostra invece una pagina a tema. Così nessun sito può far uscire il
   browser su Internet o verso la tua rete locale.

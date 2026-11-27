@@ -2,10 +2,18 @@
 
 Risponde solo per i nomi .duck registrati: li risolve verso il relay. Non è un resolver
 generico (per il resto risponde REFUSED), così non può essere usato per amplificare attacchi.
+
+Due ingressi con le stesse risposte: UDP (porta 53, per la LAN) e DNS-over-HTTPS (RFC 8484,
+`/dns-query`), che passa dal tunnel Cloudflare: niente porte aperte, IP di casa nascosto.
 """
 import asyncio
+import base64
 import socket
 import struct
+import urllib.request
+from urllib.parse import parse_qs, urlsplit
+
+from . import __version__
 
 TTL = 60
 A, AAAA = 1, 28
@@ -80,15 +88,100 @@ async def serve(registry, relay_ip, host="0.0.0.0", port=53):
     return transport
 
 
-def resolve(name, server, port=53, timeout=3.0):
-    """Chiede a `server` l'IP di `name`. Solleva LookupError se il nome non esiste."""
-    qid = b"\xd0\x0c"
+DOH_PATH = "/dns-query"
+DOH_TYPE = "application/dns-message"
+_MAX_HEAD, _MAX_QUERY = 8192, 512
+
+
+def _http(writer, status, body=b"", content_type="text/plain; charset=utf-8", cache=None):
+    head = ["HTTP/1.1 %s" % status, "Content-Type: " + content_type, "Content-Length: %d" % len(body),
+            "Connection: close"]
+    if cache is not None:
+        head.append("Cache-Control: max-age=%d" % cache)
+    writer.write(("\r\n".join(head) + "\r\n\r\n").encode("ascii") + body)
+
+
+async def _doh_query(reader):
+    """Legge una richiesta HTTP; ritorna (stato_errore, None) oppure (None, pacchetto_dns)."""
+    head = await reader.readuntil(b"\r\n\r\n")
+    if len(head) > _MAX_HEAD:
+        return "431 Request Header Fields Too Large", None
+    lines = head.decode("latin-1").split("\r\n")
+    try:
+        method, target, _ = lines[0].split(" ", 2)
+    except ValueError:
+        return "400 Bad Request", None
+    headers = {}
+    for line in lines[1:]:
+        if ":" in line:
+            k, v = line.split(":", 1)
+            headers[k.strip().lower()] = v.strip()
+    url = urlsplit(target)
+    if url.path != DOH_PATH:
+        return "404 Not Found", None
+    if method == "GET":
+        raw = parse_qs(url.query).get("dns", [""])[0]
+        try:
+            return None, base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4))
+        except ValueError:
+            return "400 Bad Request", None
+    if method == "POST":
+        if headers.get("content-type", "").split(";")[0].strip() != DOH_TYPE:
+            return "415 Unsupported Media Type", None
+        try:
+            length = int(headers.get("content-length", ""))
+        except ValueError:
+            return "411 Length Required", None
+        if not 0 < length <= _MAX_QUERY:
+            return "413 Content Too Large", None
+        return None, await reader.readexactly(length)
+    return "405 Method Not Allowed", None
+
+
+async def serve_doh(registry, relay_ip, host="127.0.0.1", port=8053):
+    """DNS-over-HTTPS in chiaro (HTTP): il TLS lo fa Cloudflare davanti, nel tunnel."""
+    async def handle(reader, writer):
+        try:
+            error, query = await asyncio.wait_for(_doh_query(reader), 10)
+            reply = None if error else answer(query, registry, relay_ip)
+            if reply:
+                _http(writer, "200 OK", reply, DOH_TYPE, cache=TTL)
+            else:
+                _http(writer, error or "400 Bad Request", (error or "400 Bad Request").encode())
+            await writer.drain()
+        except (asyncio.IncompleteReadError, asyncio.LimitOverrunError, asyncio.TimeoutError,
+                ConnectionError, UnicodeError):
+            pass
+        finally:
+            writer.close()
+    return await asyncio.start_server(handle, host, port, limit=_MAX_HEAD)
+
+
+def _query(name, qid):
     qname = b"".join(bytes([len(p)]) + p.encode("ascii") for p in name.split(".")) + b"\0"
-    query = qid + struct.pack("!HHHHH", 0x0100, 1, 0, 0, 0) + qname + struct.pack("!HH", A, 1)
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.settimeout(timeout)
-        s.sendto(query, (server, port))
-        data, _ = s.recvfrom(512)
+    return qid + struct.pack("!HHHHH", 0x0100, 1, 0, 0, 0) + qname + struct.pack("!HH", A, 1)
+
+
+def _resolve_doh(name, url, timeout):
+    qid = b"\0\0"  # RFC 8484: id 0, così le cache HTTP funzionano
+    request = urllib.request.Request(url, data=_query(name, qid), method="POST", headers={
+        "Content-Type": DOH_TYPE, "Accept": DOH_TYPE, "User-Agent": "DuckNet/" + __version__})
+    with urllib.request.urlopen(request, timeout=timeout) as r:
+        return qid, r.read(_MAX_QUERY)
+
+
+def resolve(name, server, port=53, timeout=3.0):
+    """Chiede a `server` l'IP di `name`. Solleva LookupError se il nome non esiste.
+
+    `server` è un URL https://…/dns-query (DNS-over-HTTPS) oppure un host per il DNS su UDP (`port`)."""
+    if server.startswith(("https://", "http://")):
+        qid, data = _resolve_doh(name, server, max(timeout, 10.0))
+    else:
+        qid = b"\xd0\x0c"
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.settimeout(timeout)
+            s.sendto(_query(name, qid), (server, port))
+            data, _ = s.recvfrom(512)
     if data[:2] != qid or len(data) < 12:
         raise LookupError("risposta DNS non valida")
     rcode, ancount = data[3] & 0xF, struct.unpack("!H", data[6:8])[0]

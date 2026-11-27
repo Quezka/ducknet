@@ -1,13 +1,14 @@
 # Installazione sul server
 
-Il server DuckNet fa girare **due servizi**: il DNS (UDP 53) e il relay (TCP 4343). Possono stare
-su un container/VM qualsiasi della rete di casa; basta che il router inoltri le due porte.
+Il server DuckNet fa girare **due servizi**: il DNS (DNS-over-HTTPS sulla porta 8053, più UDP 53 per la LAN)
+e il relay (TCP 4343). Possono stare su un container/VM qualsiasi della rete di casa.
 
 ## Prerequisiti
 
 - Python 3.10+ (nessun pacchetto da installare).
-- Un record **A** `dns.quezka.uk` → IP pubblico di casa. Se l'IP cambia serve un DNS dinamico.
-- Sul router: inoltro **UDP 53** e **TCP 4343** verso il container.
+- Un tunnel Cloudflare con l'hostname `dns.quezka.uk` → `http://<container>:8053`. Così il DNS non
+  apre porte e l'IP di casa non compare in nessun record.
+- Sul router: inoltro **TCP 4343** verso il container (il relay è l'unica porta aperta).
 - L'IP pubblico va in `DUCKNET_RELAY_IP`: è l'indirizzo a cui il DNS fa puntare tutti i `.duck`.
 
 ## Passi
@@ -40,16 +41,17 @@ rileggono il registro quando cambia.
 ## Pubblicare un sito (da qualsiasi computer)
 
 ```sh
-DUCKNET_SECRET=... python3 -m ducknet host pippo.duck ./cartella --relay dns.quezka.uk
+DUCKNET_SECRET=... python3 -m ducknet host pippo.duck ./cartella
 ```
 
+Il relay lo trova da solo: chiede al DNS il proprio nome (`--relay HOST` per forzarlo).
 Serve `index.html` nella cartella. Se il relay cade o la rete salta, l'host si riconnette da solo
 (pause da 1 a 30 secondi). Per tenerlo acceso sempre, fallo girare con un servizio systemd o `tmux`.
 
 ## Verifica
 
 ```sh
-python3 -m ducknet get duck://pippo.duck/ --dns dns.quezka.uk      # dal portatile, anche fuori casa
+python3 -m ducknet get duck://pippo.duck/      # dal portatile, anche fuori casa (DNS-over-HTTPS)
 journalctl -u ducknet-dns -u ducknet-relay -f                       # sul server
 ```
 
@@ -59,8 +61,7 @@ Se dà 503: il nome esiste ma nessun host è posato. Se non risponde nulla: cont
 ## IP che cambia
 
 L'IP pubblico di casa cambia, quindi `ducknet-ddns.timer` lo controlla ogni 10 minuti e aggiorna `DUCKNET_RELAY_IP`.
-Con un token Cloudflare (permesso Zone → DNS → Edit su quezka.uk) in `/etc/ducknet/cloudflare.token`, permessi 600,
-crea e aggiorna anche il record A `dns.quezka.uk`, senza proxy.
+Il DNS riparte e i `.duck` puntano al nuovo IP. `dns.quezka.uk` passa dal tunnel: nessun record da aggiornare.
 
 ```sh
 cp deploy/ducknet-ddns.service deploy/ducknet-ddns.timer /etc/systemd/system/

@@ -102,9 +102,8 @@ class HostFilesTest(unittest.TestCase):
             write(os.path.join(root, "caffe"), "menu")
             self.assertIn(b"200", respond(root, "/caffe")[:20])
 
-    def test_ddns_follows_the_address_and_keeps_the_record_right(self):
+    def test_ddns_follows_the_address(self):
         import io
-        import json
         from ducknet import ddns
 
         class Answer(io.BytesIO):
@@ -124,28 +123,6 @@ class HostFilesTest(unittest.TestCase):
             self.assertTrue(ddns.update_env(env, "87.20.177.208"))
             self.assertFalse(ddns.update_env(env, "87.20.177.208"))
             self.assertEqual(open(env).read(), "DUCKNET_RELAY_IP=87.20.177.208\nOTHER=x\n")
-        records, calls = [], []
-
-        def cloudflare(request, timeout=None):
-            calls.append((request.get_method(), request.full_url))
-            self.assertEqual(request.get_header("Authorization"), "Bearer tok")
-            if "/zones?name=" in request.full_url:
-                result = [{"id": "z1"}]
-            elif request.get_method() == "GET":
-                result = list(records)
-            else:
-                body = json.loads(request.data)
-                self.assertFalse(body["proxied"])
-                records[:] = [dict(body, id="r1")]
-                result = records[0]
-            return Answer(json.dumps({"success": True, "result": result}).encode())
-
-        self.assertTrue(ddns.update_record("tok", "1.1.1.1", cloudflare))
-        self.assertEqual(calls[-1][0], "POST")
-        self.assertFalse(ddns.update_record("tok", "1.1.1.1", cloudflare))
-        self.assertTrue(ddns.update_record("tok", "8.8.8.8", cloudflare))
-        self.assertEqual(calls[-1][0], "PUT")
-        self.assertEqual(records[0]["content"], "8.8.8.8")
 
     def test_no_path_traversal(self):
         with tempfile.TemporaryDirectory() as d:
@@ -206,6 +183,37 @@ class EndToEndTest(unittest.IsolatedAsyncioTestCase):
     async def test_unregistered_name_does_not_resolve(self):
         with self.assertRaises(LookupError):
             await self.get("nope.duck/")
+
+    async def test_dns_over_https(self):
+        import base64
+        await self.start_host()
+        doh = await dns.serve_doh(self.reg, "127.0.0.1", "127.0.0.1", 0)
+        self.addCleanup(doh.close)
+        url = "http://127.0.0.1:%d%s" % (doh.sockets[0].getsockname()[1], dns.DOH_PATH)
+        code, _, _, body = await client.fetch("duck://pippo.duck/", url, 0, self.port, timeout=5)
+        self.assertEqual((code, body), (200, b"<h1>quack</h1>"))
+        with self.assertRaises(LookupError):
+            await client.fetch("nope.duck/", url, 0, self.port, timeout=5)
+
+        async def raw(request):
+            r, w = await asyncio.open_connection(*doh.sockets[0].getsockname()[:2])
+            w.write(request)
+            data = await r.read()
+            w.close()
+            return data
+
+        query = base64.urlsafe_b64encode(make_query("pippo.duck")).rstrip(b"=")
+        ok = await raw(b"GET /dns-query?dns=" + query + b" HTTP/1.1\r\nHost: x\r\n\r\n")
+        self.assertTrue(ok.startswith(b"HTTP/1.1 200"))
+        self.assertIn(b"application/dns-message", ok)
+        self.assertTrue(ok.endswith(socket.inet_aton("127.0.0.1")))
+        for request, status in ((b"GET /altro HTTP/1.1\r\n\r\n", b"404"),
+                                (b"PUT /dns-query HTTP/1.1\r\n\r\n", b"405"),
+                                (b"POST /dns-query HTTP/1.1\r\nContent-Type: text/plain\r\n\r\n", b"415"),
+                                (b"POST /dns-query HTTP/1.1\r\nContent-Type: application/dns-message\r\n"
+                                 b"Content-Length: 99999\r\n\r\n", b"413"),
+                                (b"GET /dns-query?dns=AAAA HTTP/1.1\r\n\r\n", b"400")):
+            self.assertTrue((await raw(request)).startswith(b"HTTP/1.1 " + status), request)
 
     async def test_unregistered_name_at_relay_is_404(self):
         r, w = await asyncio.open_connection("127.0.0.1", self.port)

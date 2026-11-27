@@ -20,8 +20,13 @@ async def _serve_forever(*servers):
 
 def cmd_dns(args):
     async def main():
-        await dns.serve(_registry(args), args.relay_ip, args.bind, args.port)
-        print("DNS DuckNet su %s:%d, i nomi .duck puntano a %s" % (args.bind, args.port, args.relay_ip))
+        registry = _registry(args)
+        if args.port:
+            await dns.serve(registry, args.relay_ip, args.bind, args.port)
+            print("DNS DuckNet su %s:%d (UDP), i nomi .duck puntano a %s" % (args.bind, args.port, args.relay_ip))
+        if args.doh_port:
+            await dns.serve_doh(registry, args.relay_ip, args.doh_bind, args.doh_port)
+            print("DNS-over-HTTPS su http://%s:%d%s" % (args.doh_bind, args.doh_port, dns.DOH_PATH))
         await _serve_forever()
     asyncio.run(main())
 
@@ -39,8 +44,14 @@ def cmd_host(args):
     secret = os.environ.get("DUCKNET_SECRET")
     if not secret:
         sys.exit("imposta DUCKNET_SECRET col segreto che ti ha dato `ducknet register`")
-    print("Servo %s come %s tramite %s:%d" % (args.root, args.name, args.relay, args.relay_port))
-    asyncio.run(Host(args.name, secret, args.root, args.relay, args.relay_port).run())
+    relay = args.relay
+    if relay == "auto":  # il nome registrato punta già al relay
+        try:
+            relay = dns.resolve(args.name, args.dns, args.dns_port)
+        except (LookupError, OSError) as e:
+            sys.exit("ducknet: non trovo il relay per %s: %s" % (args.name, e))
+    print("Servo %s come %s tramite %s:%d" % (args.root, args.name, relay, args.relay_port))
+    asyncio.run(Host(args.name, secret, args.root, relay, args.relay_port).run())
 
 
 def cmd_register(args):
@@ -91,13 +102,17 @@ def main(argv=None):
     s = add("dns", cmd_dns, "server DNS (dns.quezka.uk)")
     server_opts(s, 53)
     s.add_argument("--relay-ip", required=True, help="IP pubblico del relay, dove puntano i nomi .duck")
+    s.add_argument("--doh-bind", default="127.0.0.1")
+    s.add_argument("--doh-port", type=int, default=0, help="porta HTTP per DNS-over-HTTPS (0 = spento)")
     server_opts(add("relay", cmd_relay, "relay dei tunnel"), protocol.PORT)
 
     s = add("host", cmd_host, "pubblica una cartella su DuckNet")
     s.add_argument("name")
     s.add_argument("root")
-    s.add_argument("--relay", default=client.DEFAULT_DNS)
+    s.add_argument("--relay", default="auto", help="host del relay; auto = chiede al DNS il proprio nome")
     s.add_argument("--relay-port", type=int, default=protocol.PORT)
+    s.add_argument("--dns", default=client.DEFAULT_DNS)
+    s.add_argument("--dns-port", type=int, default=53)
 
     for name, fn, help_ in (("register", cmd_register, "registra un nome .duck"),
                             ("unregister", cmd_unregister, "rimuove un nome")):
